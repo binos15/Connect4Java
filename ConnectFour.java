@@ -5,7 +5,10 @@ import java.util.Scanner;
 
 public class ConnectFour {
 	
-	public static char[][] board = new char[6][7];
+	private static char[][] board = new char[6][7];
+	
+	private static char colorLetter = 'w';
+	private static int movesPlayed = 0; //	keep track of moves played for tie game
 	
 	public static void initBoard() {							// Fills up the board with dashes.
         for (int r = 0; r < 6; r++)
@@ -24,22 +27,38 @@ public class ConnectFour {
 		}    
 	}
 	
-	public static void makeMove (int column, char color) {		// Modify the board with player move.
+	public static int getFreeColumn (int column, char color) {		// Modify the board with player move.
 		int arrayColumn = column - 1;
-		try {													
-			for (int i = board.length -1; i>-2; i--) {			// Start loop at the end of the array to place the move as low as possible. Loop ends at -2 so that i gets to -1 and triggers the exception. 
+			for (int i = board.length -1; i>-1; i--) {			// Start loop at the end of the array to place the move as low as possible. Loop ends at -2 so that i gets to -1 and triggers the exception. 
 				char charAtPos = board[i][arrayColumn];
 				if (charAtPos == 'b' || charAtPos == 'w') {
 					continue;									// Continue loop if position already has a move.
 				} 
 				if (charAtPos == '-') {
-					board[i][arrayColumn] = color;				// Modify board with move char.
-					i = -2;										// End loop.
+					return i;
 				} 
 			}
-		} catch (ArrayIndexOutOfBoundsException e){
-			System.out.println("Column is full!");				// Prints 
-			System.out.println();
+		return -1;
+	}
+	
+	 public static void flipLetter() {
+		 if (colorLetter == 'w') {
+				colorLetter = 'b';
+			} else {
+				colorLetter = 'w';
+			}
+	 }
+	 
+	public static void modifyBoard (int move) {
+		int freeRow = getFreeColumn(move, colorLetter);
+		if (freeRow > -1) {
+			board[freeRow][move-1] = colorLetter; // Modify board with move char.
+			movesPlayed += 1;
+			flipLetter();
+			//System.out.println(movesPlayed);
+		} else {
+			System.out.println("Column is full! Choose another number.");
+			//continue;
 		}
 	}
 
@@ -48,7 +67,7 @@ public class ConnectFour {
     	try (Scanner input = new Scanner(System.in)) {	//	create scanner
         	//SETUP LOOP//
         	while (true) {    // repeat while true
-        		int movesPlayed = 0; //	keep track of moves played for tie game
+        		
         		initBoard();	//	set board to - on start or for new game
         		displayBoard();
         		
@@ -56,7 +75,7 @@ public class ConnectFour {
       
         		System.out.println("WELCOME TO ALEXANDRE'S CONNECT 4!");
         		while (true) {	 //	repeat while true)
-    				System.out.println("Enter number:");  										
+    				System.out.println("Enter number between 1-7:");  										
             		try {
             			//get player input as int
             			String line = input.nextLine().trim();  								// Attempts to get int from input. Prevents input with spaces to be accepted and allow one player to make multiple moves at once.
@@ -70,10 +89,7 @@ public class ConnectFour {
             			    continue;
             			}
             			
-            			makeMove(move, 'w');
-            			movesPlayed += 1;
-            			System.out.println(movesPlayed);
-                	
+            			modifyBoard (move);
             			displayBoard();
                 		
             			if (movesPlayed == 42) {
@@ -81,16 +97,6 @@ public class ConnectFour {
             				System.out.println();
             				break;
             			}
-            		
-						/*
-						 * if (winCheck(currentLetter)) { System.out.println("*********");
-						 * System.out.println("*"+ currentLetter + " WINS!*"); //print
-						 * System.out.println("*********"); System.out.println();
-						 * System.out.println("NEW GAME"); break; }
-						 */
-                		
-                		//flipLetter();
-                		
             		} catch (Exception e) {
             		    System.out.println("Enter a number between 1-7");	// Doesn't consume when it's an ArrayOutOfBoundsException.
             		    if (e instanceof InputMismatchException) {
